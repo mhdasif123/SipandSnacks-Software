@@ -6,7 +6,9 @@ A comprehensive ordering system for company employees to order tea and snacks, w
 ## 🌐 Live Demo
 🔗 [View Hosted App on Netlify](https://sipandsnacks.netlify.app/)
 
----
+### 🔑 Admin Login Credentials
+- **Username:** `admin`  
+- **Password:** `admin123`
 
 ## Features
 
@@ -190,5 +192,5 @@ src/
 
 ## Support
 
-For issues or feature requests, please contact the development team.
+- For issues or feature requests, please contact the development team.
 =======
