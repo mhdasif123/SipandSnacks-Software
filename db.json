@@ -1,0 +1,26 @@
+{
+  "employees": [
+    { "id": 1, "name": "Rehna" },
+    { "id": 2, "name": "Bismil" },
+    { "id": 3, "name": "Asif" },
+    { "id": 4, "name": "Gopika" },
+    { "id": 5, "name": "Fawas" }
+  ],
+  "tea": [
+    { "id": 1, "name": "Tea", "price": 5 },
+    { "id": 2, "name": "Coffee", "price": 8 },
+    { "id": 3, "name": "Black Coffee", "price": 8 },
+    { "id": 4, "name": "Green Tea", "price": 6 },
+    { "id": 5, "name": "Masala Chai", "price": 7 }
+  ],
+  "snacks": [
+    { "id": 1, "name": "Samosa", "price": 10 },
+    { "id": 2, "name": "Kayibhaji", "price": 12 },
+    { "id": 3, "name": "Mullak Bhaji", "price": 15 },
+    { "id": 4, "name": "Egg Bhaji", "price": 18 },
+    { "id": 5, "name": "Sugiyan", "price": 8 },
+    { "id": 6, "name": "Vada", "price": 6 },
+    { "id": 7, "name": "Pakora", "price": 10 }
+  ],
+  "orders": []
+}
