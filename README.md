@@ -187,6 +187,3 @@ src/
 
 For issues or feature requests, please contact the development team.
 =======
-# SipandSnacks-Software
-Tea and Snacks Ordering Software
->>>>>>> 08f1569134200cfd3ab8ea333820e907557f19da
