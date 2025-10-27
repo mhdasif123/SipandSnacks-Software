@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Sip and Snacks - Tea & Snacks Ordering System
 
 A comprehensive ordering system for company employees to order tea and snacks, with admin management capabilities.
