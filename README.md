@@ -3,6 +3,11 @@
 
 A comprehensive ordering system for company employees to order tea and snacks, with admin management capabilities.
 
+## 🌐 Live Demo
+🔗 [View Hosted App on Netlify](https://sipandsnacks.netlify.app/)
+
+---
+
 ## Features
 
 ### Employee Features
