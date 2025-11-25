@@ -1,21 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { storage, Order } from '../types';
-import { Calendar, Clock, Coffee, Cookie, Download, MessageSquare } from 'lucide-react';
+import { Order } from '../types';
+import { ordersAPI } from '../utils/api';
+import { Calendar, Clock, Coffee, Cookie, Download, MessageSquare, RefreshCw } from 'lucide-react';
 
 const TodaysSummary: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentDateTime, setCurrentDateTime] = useState({
     date: '',
     time: ''
   });
 
+  const loadOrders = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      // Use getToday() API which filters orders for today's date on the backend
+      const ordersData = await ordersAPI.getToday();
+      console.log('[TodaysSummary] Today\'s orders from API:', ordersData);
+      const mappedOrders = ordersData.map((order) => ({
+        id: order.id.toString(),
+        employeeName: order.employeeName,
+        tea: order.tea,
+        snack: order.snack,
+        amount: typeof order.amount === 'string' ? parseFloat(order.amount) : Number(order.amount),
+        orderDate: order.orderDate,
+        orderTime: order.orderTime
+      }));
+      console.log('[TodaysSummary] Mapped orders:', mappedOrders);
+      setOrders(mappedOrders);
+    } catch (error) {
+      console.error('[TodaysSummary] Error loading orders:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load orders');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setOrders(storage.getOrders());
+    loadOrders();
+    
+    // Reload orders every 10 seconds to keep data fresh (reduced from 30 seconds)
+    const ordersInterval = setInterval(loadOrders, 10000);
     
     const updateDateTime = () => {
       const now = new Date();
       setCurrentDateTime({
-        date: now.toLocaleDateString('en-IN'),
+        date: now.toLocaleDateString('en-IN'), // Display format
         time: now.toLocaleTimeString('en-IN', { 
           hour: '2-digit', 
           minute: '2-digit',
@@ -25,12 +57,17 @@ const TodaysSummary: React.FC = () => {
     };
 
     updateDateTime();
-    const interval = setInterval(updateDateTime, 1000);
+    const timeInterval = setInterval(updateDateTime, 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(ordersInterval);
+      clearInterval(timeInterval);
+    };
   }, []);
 
-  const todayOrders = orders.filter(order => order.orderDate === currentDateTime.date);
+  // Since we're using getToday() API, all orders are already filtered for today
+  // Just use all orders from the response (they're already today's orders)
+  const todayOrders = orders;
 
   const teaCounts: {[key: string]: number} = {};
   const snackCounts: {[key: string]: number} = {};
@@ -41,6 +78,26 @@ const TodaysSummary: React.FC = () => {
   });
 
   const totalAmount = todayOrders.reduce((sum, order) => sum + order.amount, 0);
+
+  if (isLoading) {
+    return (
+      <div className="container">
+        <div className="card text-center" style={{ padding: '3rem' }}>
+          <div>Loading today's orders...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container">
+        <div className="card" style={{ padding: '2rem', background: '#fff3cd' }}>
+          <div style={{ color: '#856404' }}>Error: {error}</div>
+        </div>
+      </div>
+    );
+  }
 
   const generateWhatsAppMessage = () => {
     let message = `Today's Order Summary (${currentDateTime.date}):\n\n`;
@@ -213,6 +270,15 @@ const TodaysSummary: React.FC = () => {
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h1 style={{ color: '#333', margin: 0 }}>Today's Order Summary</h1>
           <div className="d-flex gap-2">
+            <button 
+              onClick={loadOrders} 
+              className="btn btn-info"
+              disabled={isLoading}
+              title="Refresh orders"
+            >
+              <RefreshCw size={16} style={{ marginRight: '0.5rem' }} />
+              {isLoading ? 'Refreshing...' : 'Refresh'}
+            </button>
             <button onClick={generateWhatsAppMessage} className="btn btn-success">
               <MessageSquare size={16} style={{ marginRight: '0.5rem' }} />
               Generate WhatsApp Message

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { storage } from '../types';
+import { authAPI } from '../utils/api';
 import { User, Lock, AlertCircle } from 'lucide-react';
 
 const AdminLogin: React.FC = () => {
@@ -13,10 +13,14 @@ const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect if already logged in
-    if (storage.getCurrentUser()) {
-      navigate('/admin/dashboard');
-    }
+    // Check if already logged in
+    const checkAuth = async () => {
+      const result = await authAPI.verify();
+      if (result.valid) {
+        navigate('/admin/dashboard');
+      }
+    };
+    checkAuth();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,16 +29,14 @@ const AdminLogin: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const adminUser = storage.getAdminUser();
-      
-      if (credentials.username === adminUser.username && credentials.password === adminUser.password) {
-        storage.setCurrentUser(credentials.username);
+      const response = await authAPI.login(credentials.username, credentials.password);
+      if (response.success && response.token) {
         navigate('/admin/dashboard');
       } else {
         setError('Invalid username or password');
       }
-    } catch (error) {
-      setError('Login failed. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }

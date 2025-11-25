@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { storage, Order, Employee, TeaItem, SnackItem, generateId, getCurrentDateTime } from '../types';
+import { Order, Employee, TeaItem, SnackItem, getCurrentDateTime } from '../types';
+import { employeesAPI, teaItemsAPI, snackItemsAPI, ordersAPI, settingsAPI } from '../utils/api';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 
 const OrderForm: React.FC = () => {
@@ -18,12 +19,44 @@ const OrderForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [maxOrderAmount, setMaxOrderAmount] = useState(25); // Default to 25, will be loaded from settings
 
   useEffect(() => {
-    setOrders(storage.getOrders());
-    setEmployees(storage.getEmployees());
-    setTeaItems(storage.getTeaItems());
-    setSnackItems(storage.getSnackItems());
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [employeesData, teaData, snackData, ordersData, settingsData] = await Promise.all([
+          employeesAPI.getAll(),
+          teaItemsAPI.getAll(),
+          snackItemsAPI.getAll(),
+          ordersAPI.getAll(),
+          settingsAPI.getAll().catch(() => ({}) as {[key: string]: {value: string; description: string}}) // Fallback to empty object if settings fail
+        ]);
+        setEmployees(employeesData.map((emp) => ({ id: emp.id.toString(), name: emp.name })));
+        setTeaItems(teaData.map((item) => ({ id: item.id.toString(), name: item.name, price: typeof item.price === 'string' ? parseFloat(item.price) : item.price })));
+        setSnackItems(snackData.map((item) => ({ id: item.id.toString(), name: item.name, price: typeof item.price === 'string' ? parseFloat(item.price) : item.price })));
+        setOrders(ordersData.map((order) => ({
+          id: order.id.toString(),
+          employeeName: order.employeeName,
+          tea: order.tea,
+          snack: order.snack,
+          amount: typeof order.amount === 'string' ? parseFloat(order.amount) : Number(order.amount),
+          orderDate: order.orderDate,
+          orderTime: order.orderTime
+        })));
+        // Load max order amount from settings
+        const maxOrderSetting = settingsData['max_order_amount'];
+        if (maxOrderSetting && maxOrderSetting.value) {
+          setMaxOrderAmount(parseFloat(maxOrderSetting.value) || 25);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -53,8 +86,8 @@ const OrderForm: React.FC = () => {
       newErrors.snack = 'Please select a snack item';
     }
 
-    if (totalAmount > 25) {
-      newErrors.amount = 'Total amount cannot exceed ₹25';
+    if (totalAmount > maxOrderAmount) {
+      newErrors.amount = `Total amount cannot exceed ₹${maxOrderAmount}`;
     }
 
     // Check if employee already ordered today
@@ -89,17 +122,26 @@ const OrderForm: React.FC = () => {
       const tea = teaItems.find(item => item.id === formData.tea);
       const snack = snackItems.find(item => item.id === formData.snack);
 
-      const order: Order = {
-        id: generateId(),
+      await ordersAPI.add({
         employeeName: employee?.name || '',
         tea: tea?.name || '',
         snack: snack?.name || '',
         amount: totalAmount,
         orderDate: date,
         orderTime: time
-      };
+      });
 
-      storage.addOrder(order);
+      // Reload orders to check for duplicates
+      const updatedOrders = await ordersAPI.getAll();
+      setOrders(updatedOrders.map((order) => ({
+        id: order.id.toString(),
+        employeeName: order.employeeName,
+        tea: order.tea,
+        snack: order.snack,
+        amount: typeof order.amount === 'string' ? parseFloat(order.amount) : Number(order.amount),
+        orderDate: order.orderDate,
+        orderTime: order.orderTime
+      })));
       
       setShowSuccess(true);
       setFormData({
@@ -116,6 +158,11 @@ const OrderForm: React.FC = () => {
 
     } catch (error) {
       console.error('Error submitting order:', error);
+      if (error instanceof Error && error.message.includes('already placed an order')) {
+        setErrors({ employeeName: error.message });
+      } else {
+        setErrors({ employeeName: 'Failed to submit order. Please try again.' });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -144,6 +191,9 @@ const OrderForm: React.FC = () => {
           <p style={{ color: '#718096', fontSize: '1.1rem' }}>
             Place your tea and snack order for today
           </p>
+          {isLoading && (
+            <div style={{ color: '#6c757d', marginTop: '1rem' }}>Loading data...</div>
+          )}
           <div style={{
             background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
             border: '1px solid #f59e0b',
@@ -261,7 +311,7 @@ const OrderForm: React.FC = () => {
               </div>
             )}
             <small style={{ color: '#6c757d', marginTop: '0.25rem', display: 'block' }}>
-              Maximum amount per order: ₹25
+              Maximum amount per order: ₹{maxOrderAmount}
             </small>
           </div>
 

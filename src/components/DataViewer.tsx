@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getHistoricalData, getSummaryStats } from '../utils/dataUtils';
+import { employeesAPI, teaItemsAPI, snackItemsAPI, ordersAPI } from '../utils/api';
+import { Order } from '../types';
 import { BarChart3, Calendar, Users, TrendingUp } from 'lucide-react';
 
 const DataViewer: React.FC = () => {
@@ -7,10 +9,37 @@ const DataViewer: React.FC = () => {
   const [summaryStats, setSummaryStats] = useState<any>(null);
 
   useEffect(() => {
-    const data = getHistoricalData();
-    const stats = getSummaryStats();
-    setHistoricalData(data);
-    setSummaryStats(stats);
+    const loadData = async () => {
+      try {
+        const [employeesData, teaData, snackData, ordersData] = await Promise.all([
+          employeesAPI.getAll(),
+          teaItemsAPI.getAll(),
+          snackItemsAPI.getAll(),
+          ordersAPI.getAll()
+        ]);
+        
+        const employees = employeesData.map((emp) => ({ id: emp.id.toString(), name: emp.name }));
+        const teaItems = teaData.map((item) => ({ id: item.id.toString(), name: item.name, price: typeof item.price === 'string' ? parseFloat(item.price) : item.price }));
+        const snackItems = snackData.map((item) => ({ id: item.id.toString(), name: item.name, price: typeof item.price === 'string' ? parseFloat(item.price) : item.price }));
+        const orders = ordersData.map((order) => ({
+          id: order.id.toString(),
+          employeeName: order.employeeName,
+          tea: order.tea,
+          snack: order.snack,
+          amount: typeof order.amount === 'string' ? parseFloat(order.amount) : Number(order.amount),
+          orderDate: order.orderDate,
+          orderTime: order.orderTime
+        }));
+
+        const data = getHistoricalData(orders, employees, teaItems, snackItems);
+        const stats = getSummaryStats(orders, employees, teaItems, snackItems);
+        setHistoricalData(data);
+        setSummaryStats(stats);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+    loadData();
   }, []);
 
   if (!historicalData || !summaryStats) {
@@ -87,7 +116,7 @@ const DataViewer: React.FC = () => {
           <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
             {historicalData.uniqueDates.map((date: string) => {
               const dayOrders = historicalData.ordersByDate[date];
-              const dayTotal = dayOrders.reduce((sum: number, order: any) => sum + order.amount, 0);
+              const dayTotal = dayOrders.reduce((sum: number, order: Order) => sum + order.amount, 0);
               return (
                 <div key={date} style={{
                   padding: '1rem',

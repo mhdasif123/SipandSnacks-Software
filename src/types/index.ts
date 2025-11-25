@@ -8,6 +8,34 @@ export interface Order {
   orderTime: string;
 }
 
+// API Response Types
+export interface ApiEmployee {
+  id: number | string;
+  name: string;
+}
+
+export interface ApiTeaItem {
+  id: number | string;
+  name: string;
+  price: number | string;
+}
+
+export interface ApiSnackItem {
+  id: number | string;
+  name: string;
+  price: number | string;
+}
+
+export interface ApiOrder {
+  id: number | string;
+  employeeName: string;
+  tea: string;
+  snack: string;
+  amount: number | string;
+  orderDate: string;
+  orderTime: string;
+}
+
 export interface Employee {
   id: string;
   name: string;
@@ -226,6 +254,12 @@ export const generateId = (): string => {
 };
 
 export const formatDate = (date: Date): string => {
+  // Return ISO format (YYYY-MM-DD) for database compatibility
+  return date.toISOString().split('T')[0];
+};
+
+export const formatDateDisplay = (date: Date): string => {
+  // Return localized format (DD/MM/YYYY) for display only
   return date.toLocaleDateString('en-IN');
 };
 

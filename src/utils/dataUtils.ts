@@ -1,12 +1,12 @@
-import { storage, Order } from '../types';
+import { Order, Employee, TeaItem, SnackItem } from '../types';
 
-// Utility functions to access historical data
-export const getHistoricalData = () => {
-  const orders = storage.getOrders();
-  const employees = storage.getEmployees();
-  const teaItems = storage.getTeaItems();
-  const snackItems = storage.getSnackItems();
-
+// Utility functions to process historical data
+export const getHistoricalData = (
+  orders: Order[],
+  employees: Employee[],
+  teaItems: TeaItem[],
+  snackItems: SnackItem[]
+) => {
   return {
     orders,
     employees,
@@ -33,8 +33,7 @@ export const getHistoricalData = () => {
 };
 
 // Get data for a specific date range
-export const getDataForDateRange = (fromDate: string, toDate: string) => {
-  const orders = storage.getOrders();
+export const getDataForDateRange = (orders: Order[], fromDate: string, toDate: string) => {
   const from = new Date(fromDate);
   const to = new Date(toDate);
   
@@ -45,20 +44,23 @@ export const getDataForDateRange = (fromDate: string, toDate: string) => {
 };
 
 // Get data for a specific employee
-export const getDataForEmployee = (employeeName: string) => {
-  const orders = storage.getOrders();
+export const getDataForEmployee = (orders: Order[], employeeName: string) => {
   return orders.filter((order: Order) => order.employeeName === employeeName);
 };
 
 // Get data for a specific date
-export const getDataForDate = (date: string) => {
-  const orders = storage.getOrders();
+export const getDataForDate = (orders: Order[], date: string) => {
   return orders.filter((order: Order) => order.orderDate === date);
 };
 
 // Export all data as JSON
-export const exportAllDataAsJSON = () => {
-  const data = getHistoricalData();
+export const exportAllDataAsJSON = (
+  orders: Order[],
+  employees: Employee[],
+  teaItems: TeaItem[],
+  snackItems: SnackItem[]
+) => {
+  const data = getHistoricalData(orders, employees, teaItems, snackItems);
   const jsonString = JSON.stringify(data, null, 2);
   
   // Create and download file
@@ -74,8 +76,13 @@ export const exportAllDataAsJSON = () => {
 };
 
 // Get summary statistics
-export const getSummaryStats = () => {
-  const data = getHistoricalData();
+export const getSummaryStats = (
+  orders: Order[],
+  employees: Employee[],
+  teaItems: TeaItem[],
+  snackItems: SnackItem[]
+) => {
+  const data = getHistoricalData(orders, employees, teaItems, snackItems);
   
   return {
     totalDays: data.uniqueDates.length,
