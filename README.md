@@ -205,6 +205,6 @@ This project is open source and available for use.
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📞 Screenshorts
-![Alt text](Screenshorts/1.png)
+(Screenshorts/1.png)
 
 
