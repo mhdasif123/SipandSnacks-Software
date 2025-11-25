@@ -204,10 +204,7 @@ This project is open source and available for use.
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📞 Support
+## 📞 Screenshorts
+![Alt text](Screenshorts/1.png)
 
-For issues and questions, please check the deployment guide in [DEPLOYMENT.md](./DEPLOYMENT.md) or open an issue on GitHub.
 
----
-
-**Made with ❤️ for tea and snack lovers**
