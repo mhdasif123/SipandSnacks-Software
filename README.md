@@ -204,7 +204,11 @@ This project is open source and available for use.
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 📞 Screenshorts
-(Screenshorts/1.png)
+## Screenshorts
+![image alt](https://github.com/mhdasif123/SipandSnacks-Software/blob/main/Screenshorts/1.png?raw=true)
+![image alt](https://github.com/mhdasif123/SipandSnacks-Software/blob/main/Screenshorts/2.png?raw=true)
+![image alt](https://github.com/mhdasif123/SipandSnacks-Software/blob/main/Screenshorts/3.png?raw=true)
+![image alt](https://github.com/mhdasif123/SipandSnacks-Software/blob/main/Screenshorts/4.png?raw=true)
+
 
 
